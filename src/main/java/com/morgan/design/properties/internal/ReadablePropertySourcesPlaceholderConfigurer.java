@@ -17,6 +17,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
+import org.springframework.util.StringUtils;
 
 import com.google.common.collect.Lists;
 import com.morgan.design.properties.bean.PropertyModifiedEvent;
@@ -42,8 +43,8 @@ public class ReadablePropertySourcesPlaceholderConfigurer extends
 	private final PropertyResolver propertyResolver;
 
 	private Properties properties;
-	private Resource[] resources;
-	private String[] zks;
+	private Resource[] resourcesPath;
+	private String[] zookeeperPath;
 
 	@Autowired
 	public ReadablePropertySourcesPlaceholderConfigurer(
@@ -55,48 +56,51 @@ public class ReadablePropertySourcesPlaceholderConfigurer extends
 
 	@Override
 	protected void loadProperties(final Properties props) throws IOException {
-		super.loadProperties(props);
-		loadProperties0(props);
+		if (resourcesPath.length != 0) {
+			super.loadProperties(props);
+		}
+		if (zookeeperPath.length != 0) {
+			loadProperties0(props);
+		}
 		this.properties = props;
 	}
 
 	protected void loadProperties0(final Properties props) throws IOException {
-		if (zks.length != 0) {
-			CuratorFramework curator = ZkClientFacotry.getZkClient();
-			for (String str : zks) {
-				try {
-					byte[] statbyte = curator.getData().forPath(str);
-					String propstr = new String(statbyte,
-							Charset.defaultCharset());
-					props.load(new StringReader(propstr));
-				} catch (Exception e) {
-					throw new IOException(e);
-				}
+		CuratorFramework curator = ZkClientFacotry.getZkClient();
+		for (String str : zookeeperPath) {
+			try {
+				byte[] statbyte = curator.getData().forPath(str);
+				String propstr = new String(statbyte, Charset.defaultCharset());
+				props.load(new StringReader(propstr));
+			} catch (Exception e) {
+				throw new IOException(e);
 			}
 		}
+
 	}
 
 	public void setLocations(final String[] locations) {
-		List<Resource> resources = Lists.newArrayList();
-		List<String> zks = Lists.newArrayList();
+		List<Resource> resourcesPath = Lists.newArrayList();
+		List<String> zookeeperPath = Lists.newArrayList();
 		for (String str : locations) {
 			if (str.startsWith("zookeeper")) {
-				zks.add(str);
+				zookeeperPath.add(str);
 			}
 			if (str.startsWith("classpath")) {
 				Resource resource = new ClassPathResource(str);
-				resources.add(resource);
+				resourcesPath.add(resource);
 			}
 			if (str.startsWith("file")) {
-				Resource resource = new FileSystemResource(str);
-				resources.add(resource);
+				String pathToUse = StringUtils.cleanPath(str);
+				Resource resource = new FileSystemResource(pathToUse);
+				resourcesPath.add(resource);
 			}
 		}
-		Resource[] arrayResource = (Resource[]) resources.toArray();
-		String[] arrayZks = (String[]) zks.toArray();
-		super.setLocations(arrayResource);
-		this.resources = arrayResource;
-		this.zks = arrayZks;
+		Resource[] arrayResourcePath = (Resource[]) resourcesPath.toArray();
+		String[] arrayZookeeperPath = (String[]) zookeeperPath.toArray();
+		super.setLocations(arrayResourcePath);
+		this.resourcesPath = arrayResourcePath;
+		this.zookeeperPath = arrayZookeeperPath;
 	}
 
 	@Override
@@ -159,11 +163,12 @@ public class ReadablePropertySourcesPlaceholderConfigurer extends
 		}
 		try {
 			Executors.newSingleThreadExecutor().execute(
-					new PropertiesWatcher(this.resources, this));
+					new PropertiesWatcher(this.resourcesPath, this));
 		} catch (final IOException e) {
 			log.error("Unable to start properties file watcher", e);
 		}
-		ZookeeperWatcher zkWatcher = new ZookeeperWatcher(this.zks, this);
+		ZookeeperWatcher zkWatcher = new ZookeeperWatcher(this.zookeeperPath,
+				this);
 		zkWatcher.start();
 
 	}

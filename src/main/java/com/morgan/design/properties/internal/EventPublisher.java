@@ -6,5 +6,5 @@ public interface EventPublisher {
 
 	void onResourceChanged(Resource resource);
 
-	void onZkNodeChange(String resource);
+	void onZookeeperChanged(String resource);
 }

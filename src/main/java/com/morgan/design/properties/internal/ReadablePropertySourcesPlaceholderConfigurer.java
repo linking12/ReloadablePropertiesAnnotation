@@ -129,7 +129,7 @@ public class ReadablePropertySourcesPlaceholderConfigurer extends
 	}
 
 	@Override
-	public void onZkNodeChange(String resource) {
+	public void onZookeeperChanged(String resource) {
 		final Properties reloadedProperties = new Properties();
 		try {
 			reloadedProperties.load(new StringReader(resource));

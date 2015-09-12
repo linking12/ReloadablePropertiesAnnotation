@@ -78,7 +78,7 @@ public class ZookeeperWatcher {
 											.getPath();
 									try {
 										eventPublisher
-												.onZkNodeChange(new String(
+												.onZookeeperChanged(new String(
 														event.getData()
 																.getData(),
 														Charset.defaultCharset()));
@@ -102,7 +102,7 @@ public class ZookeeperWatcher {
 			@Override
 			public void nodeChanged() throws Exception {
 				byte[] data = cache.getCurrentData().getData();
-				eventPublisher.onZkNodeChange(new String(data, Charset
+				eventPublisher.onZookeeperChanged(new String(data, Charset
 						.defaultCharset()));
 				;
 			}

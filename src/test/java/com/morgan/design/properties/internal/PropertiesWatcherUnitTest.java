@@ -158,7 +158,7 @@ public class PropertiesWatcherUnitTest {
 					}
 
 					@Override
-					public void onZkNodeChange(String resource) {
+					public void onZookeeperChanged(String resource) {
 						// TODO Auto-generated method stub
 
 					}

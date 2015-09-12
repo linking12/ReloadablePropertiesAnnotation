@@ -6,21 +6,10 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 ">
 
-	<import resource="classpath:/spring/spring-defaultConfiguration.xml" />
-
-	<bean
-		class="com.morgan.design.properties.internal.ReloadablePropertyPostProcessor">
-		<constructor-arg ref="propertyConfigurator" />
-		<constructor-arg ref="eventNotifier" />
-		<constructor-arg ref="conversionService" />
-	</bean>
-
-	<bean  id="propertyConfigurator"
-		class="com.morgan.design.properties.internal.ReadablePropertySourcesPlaceholderConfigurer">
+	<bean id="propertyConfigurator"
+		class="com.vip.properties.internal.ReadablePropertySourcesPlaceholderConfigurer">
 		<property name="ignoreUnresolvablePlaceholders" value="false" />
 		<property name="ignoreResourceNotFound" value="true" />
-		<constructor-arg ref="eventNotifier" />
-		<constructor-arg ref="propertyResolver" />
 		<property name="locations">
 			<list>
 				<value>classpath*:META-INF/*.properties</value>
@@ -29,5 +18,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
 			</list>
 		</property>
 	</bean>
-
+	<bean class="com.vip.properties.internal.ReloadablePropertyPostProcessor">
+		<constructor-arg ref="propertyConfigurator" />
+	</bean>
 </beans>

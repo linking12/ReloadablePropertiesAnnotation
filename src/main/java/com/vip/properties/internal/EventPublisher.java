@@ -6,5 +6,5 @@ public interface EventPublisher {
 
 	void onResourceChanged(Resource resource);
 
-	void onZookeeperChanged(String resource);
+	void onZookeeperChanged(byte[] resource);
 }

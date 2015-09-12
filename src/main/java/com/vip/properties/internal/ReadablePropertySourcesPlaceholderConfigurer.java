@@ -2,7 +2,7 @@ package com.vip.properties.internal;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.nio.charset.Charset;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Executors;
@@ -35,6 +35,10 @@ public class ReadablePropertySourcesPlaceholderConfigurer extends
 	private final PropertyChangedEventNotifier eventNotifier;
 	private final PropertyResolver propertyResolver;
 
+	private String fileEncoding;
+
+	protected boolean zkOverride = false;
+
 	private Properties properties;
 	private Resource[] resourcesPath;
 	private String[] zookeeperPath;
@@ -47,10 +51,10 @@ public class ReadablePropertySourcesPlaceholderConfigurer extends
 	@Override
 	protected void loadProperties(final Properties props) throws IOException {
 		if (resourcesPath.length != 0) {
-			super.loadProperties(props);
+			loadPropertiesFromResource(props);
 		}
 		if (zookeeperPath.length != 0) {
-			loadProperties0(props);
+			loadPropertiesFromZk(props);
 		}
 		this.properties = props;
 	}
@@ -81,10 +85,11 @@ public class ReadablePropertySourcesPlaceholderConfigurer extends
 	}
 
 	@Override
-	public void onZookeeperChanged(String resource) {
+	public void onZookeeperChanged(byte[] resource) {
 		final Properties reloadedProperties = new Properties();
 		try {
-			reloadedProperties.load(new StringReader(resource));
+			String result = new String(resource, this.fileEncoding);
+			reloadedProperties.load(new StringReader(result));
 			for (final String property : this.properties.stringPropertyNames()) {
 				final String oldValue = this.properties.getProperty(property);
 				final String newValue = reloadedProperties
@@ -103,17 +108,45 @@ public class ReadablePropertySourcesPlaceholderConfigurer extends
 		}
 	}
 
-	protected void loadProperties0(final Properties props) throws IOException {
+	protected void loadPropertiesFromResource(final Properties props)
+			throws IOException {
+		super.loadProperties(props);
+	}
+
+	protected void loadPropertiesFromZk(final Properties props)
+			throws IOException {
+		Properties result = new Properties();
 		CuratorFramework curator = ZkClientFacotry.getZkClient();
 		for (String str : zookeeperPath) {
 			try {
 				byte[] statbyte = curator.getData().forPath(str);
-				String propstr = new String(statbyte, Charset.defaultCharset());
-				props.load(new StringReader(propstr));
+				String propstr = new String(statbyte, this.fileEncoding);
+				result.load(new StringReader(propstr));
 			} catch (Exception e) {
 				throw new IOException(e);
 			}
 		}
+		if (zkOverride) {
+			props.putAll(result);
+		} else {
+			Iterator<Object> it = result.keySet().iterator();
+			while (it.hasNext()) {
+				Object key = it.next();
+				if (props.get(key) == null) {
+					props.put(key, result.get(key));
+				}
+			}
+		}
+	}
+
+	@Override
+	public void setFileEncoding(String encoding) {
+		super.setFileEncoding(encoding);
+		this.fileEncoding = encoding;
+	}
+
+	public void setZkOverride(boolean zkOverride) {
+		this.zkOverride = zkOverride;
 	}
 
 	public void setLocations(final String[] locations) {

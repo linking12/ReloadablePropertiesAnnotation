@@ -1,6 +1,5 @@
 package com.vip.properties.internal;
 
-import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -77,11 +76,8 @@ public class ZookeeperWatcher {
 									final String path = event.getData()
 											.getPath();
 									try {
-										eventPublisher
-												.onZookeeperChanged(new String(
-														event.getData()
-																.getData(),
-														Charset.defaultCharset()));
+										eventPublisher.onZookeeperChanged(event
+												.getData().getData());
 										doNodeWatch(path);
 									} finally {
 										cache.close();
@@ -102,8 +98,7 @@ public class ZookeeperWatcher {
 			@Override
 			public void nodeChanged() throws Exception {
 				byte[] data = cache.getCurrentData().getData();
-				eventPublisher.onZookeeperChanged(new String(data, Charset
-						.defaultCharset()));
+				eventPublisher.onZookeeperChanged(data);
 				;
 			}
 		}, service);
@@ -138,5 +133,4 @@ public class ZookeeperWatcher {
 			}
 		}
 	}
-
 }

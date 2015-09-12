@@ -182,16 +182,19 @@ public class ReadablePropertySourcesPlaceholderConfigurer extends
 			throw new BeanInitializationException(
 					"Event bus not setup, you should not be calling this method...!");
 		}
-		try {
-			Executors.newSingleThreadExecutor().execute(
-					new PropertiesWatcher(this.resourcesPath, this));
-		} catch (final IOException e) {
-			log.error("Unable to start properties file watcher", e);
+		if (this.resourcesPath.length != 0) {
+			try {
+				Executors.newSingleThreadExecutor().execute(
+						new PropertiesWatcher(this.resourcesPath, this));
+			} catch (final IOException e) {
+				log.error("Unable to start properties file watcher", e);
+			}
 		}
-		ZookeeperWatcher zkWatcher = new ZookeeperWatcher(this.zookeeperPath,
-				this);
-		zkWatcher.start();
-
+		if (this.zookeeperPath.length != 0) {
+			ZookeeperWatcher zkWatcher = new ZookeeperWatcher(
+					this.zookeeperPath, this);
+			zkWatcher.start();
+		}
 	}
 
 	public Object resolveProperty(final Object property) {

@@ -42,19 +42,19 @@ public class ZookeeperWatcher {
 	public void start() {
 		Set<String> locationsSet = Sets.newHashSet(this.locations);
 		Set<String> locationParentSet = Sets.newHashSet();
-		for (String locationPath : locationsSet) {
+		for (String path : locationsSet) {
 			try {
-				Stat stat = curatorFramework.checkExists()
-						.forPath(locationPath);
+				Stat stat = curatorFramework.checkExists().forPath(path);
 				if (stat != null) {
-					doNodeWatch(locationPath);
+					doNodeWatch(path);
 				} else {
-					String parentPath = locationPath.substring(0,
-							locationPath.lastIndexOf("/"));
+					String parentPath = path
+							.substring(0, path.lastIndexOf("/"));
 					locationParentSet.add(parentPath);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.error("Unable to watch path [{}] Exception [{}]",
+						new Object[] { path, e.getMessage() });
 			}
 		}
 		doPathWatch(locationParentSet);
@@ -84,7 +84,7 @@ public class ZookeeperWatcher {
 									}
 								}
 							}
-						});
+						}, service);
 			} catch (Exception e) {
 				log.error("Unable to watch path [{}] Exception [{}]",
 						new Object[] { path, e.getMessage() });

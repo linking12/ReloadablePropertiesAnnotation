@@ -64,18 +64,18 @@ public class ReadablePropertySourcesPlaceholderConfigurer extends
 		try {
 			final Properties reloadedProperties = PropertiesLoaderUtils
 					.loadProperties(resource);
-			for (final String property : this.properties.stringPropertyNames()) {
+			for (final String key : this.properties.stringPropertyNames()) {
 
-				final String oldValue = this.properties.getProperty(property);
+				final String oldValue = this.properties.getProperty(key);
 				final String newValue = reloadedProperties
-						.getProperty(property);
+						.getProperty(key);
 
-				if (propertyExistsAndNotNull(property, newValue)
+				if (propertyExistsAndNotNull(key, newValue)
 						&& propertyChange(oldValue, newValue)) {
 					// Update locally stored copy of properties
-					this.properties.setProperty(property, newValue);
+					this.properties.setProperty(key, newValue);
 					// Post change event to notify any potential listeners
-					this.eventNotifier.post(new PropertyModifiedEvent(property,
+					this.eventNotifier.post(new PropertyModifiedEvent(key,
 							oldValue, newValue));
 				}
 			}

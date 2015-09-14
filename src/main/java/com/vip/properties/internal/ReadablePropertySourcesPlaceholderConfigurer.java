@@ -67,8 +67,7 @@ public class ReadablePropertySourcesPlaceholderConfigurer extends
 			for (final String key : this.properties.stringPropertyNames()) {
 
 				final String oldValue = this.properties.getProperty(key);
-				final String newValue = reloadedProperties
-						.getProperty(key);
+				final String newValue = reloadedProperties.getProperty(key);
 
 				if (propertyExistsAndNotNull(key, newValue)
 						&& propertyChange(oldValue, newValue)) {
@@ -139,7 +138,6 @@ public class ReadablePropertySourcesPlaceholderConfigurer extends
 		}
 	}
 
-	@Override
 	public void setFileEncoding(String encoding) {
 		super.setFileEncoding(encoding);
 		this.fileEncoding = encoding;
@@ -147,6 +145,10 @@ public class ReadablePropertySourcesPlaceholderConfigurer extends
 
 	public void setZkOverride(boolean zkOverride) {
 		this.zkOverride = zkOverride;
+	}
+
+	public PropertyChangedEventNotifier getEventNotifier() {
+		return eventNotifier;
 	}
 
 	public void setLocations(final String[] locations) {

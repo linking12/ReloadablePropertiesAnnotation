@@ -24,8 +24,6 @@ import com.vip.properties.bean.BeanPropertyHolder;
 import com.vip.properties.bean.PropertyModifiedEvent;
 import com.vip.properties.conversion.DefaultPropertyConversionService;
 import com.vip.properties.conversion.PropertyConversionService;
-import com.vip.properties.event.GuavaPropertyChangedEventNotifier;
-import com.vip.properties.event.PropertyChangedEventNotifier;
 
 public class ReloadablePropertyPostProcessor extends
 		InstantiationAwareBeanPostProcessorAdapter {
@@ -33,7 +31,6 @@ public class ReloadablePropertyPostProcessor extends
 	protected static Logger log = LoggerFactory
 			.getLogger(ReloadablePropertyPostProcessor.class);
 
-	private final PropertyChangedEventNotifier eventNotifier;
 	private final PropertyConversionService propertyConversionService;
 	private final ReadablePropertySourcesPlaceholderConfigurer placeholderConfigurer;
 
@@ -44,7 +41,6 @@ public class ReloadablePropertyPostProcessor extends
 	public ReloadablePropertyPostProcessor(
 			final ReadablePropertySourcesPlaceholderConfigurer placeholderConfigurer) {
 		this.placeholderConfigurer = placeholderConfigurer;
-		this.eventNotifier = new GuavaPropertyChangedEventNotifier();
 		this.propertyConversionService = new DefaultPropertyConversionService();
 	}
 
@@ -60,7 +56,7 @@ public class ReloadablePropertyPostProcessor extends
 	 */
 	public final void unregisterPropertyReloader() {
 		log.info("Unregistering ReloadablePropertyProcessor from property file changes");
-		this.eventNotifier.unregister(this);
+		this.placeholderConfigurer.getEventNotifier().unregister(this);
 	}
 
 	/**
@@ -69,7 +65,7 @@ public class ReloadablePropertyPostProcessor extends
 	 */
 	public final void registerPropertyReloader() {
 		// Setup Guava event bus listener
-		this.eventNotifier.register(this);
+		this.placeholderConfigurer.getEventNotifier().register(this);
 		// Trigger resource change listener
 		this.placeholderConfigurer.startWatching();
 	}
